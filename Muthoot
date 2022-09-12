@@ -1,0 +1,54 @@
+pipeline {
+  agent any
+  triggers {
+    GenericTrigger(
+     genericVariables: [
+      [key: 'ref', value: '$.ref'],
+      [key: 'before' , value:'$.before' ]
+     ],
+
+     causeString: 'Triggered on $ref',
+
+     token: 'NEW_PIPE',
+     tokenCredentialId: '',
+
+     printContributedVariables: true,
+     printPostContent: true,
+
+     silentResponse: false,
+
+     regexpFilterText: 'refs/heads/main',
+     regexpFilterExpression: 'refs/heads/' + BRANCH_NAME
+    )
+  }
+  stages {
+    stage('Validation') {
+      steps {
+        sh "echo Validation"
+
+      	   }
+    }
+
+    stage('Build') {
+      steps {
+	 dir('src')
+        	{       
+			sh '/var/lib/jenkins/SCRIPTS/main.sh build'
+        	}
+
+      }
+    }
+    stage('nexus_push') {
+      steps {
+
+	 dir('src')
+	        {  
+		sh '/var/lib/jenkins/SCRIPTS/main.sh nex_push'
+        	
+			
+        	}
+
+      	}
+    		}
+  	}
+}
